@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 // mounting the 'search' router to handle requests starting with '/search'
 app.use('/search', search);
 
-// mounting the 'history' router to handle requests starting with '/history'
+// // mounting the 'history' router to handle requests starting with '/history'
 app.use('/history', history);
 
 // starting the server and connecting to MongoDB

@@ -19,3 +19,42 @@ Authors:
     Angel Penate
     Brian Mojica
 */
+
+import express from 'express';
+import * as api from '../services/api.js';
+import mongo from '../services/db.js';
+
+const router = express.Router();
+
+/**
+ * Get search history
+ *
+ * @api {GET} /history
+ * @apiQuery {string} [searchTerm]
+ *  The name of the character to search for
+ *
+ * @apiExample localhost:8888/history?searchTerm=Yoshi
+ * @apiExample localhost:8888/history?searchTerm=Mario
+ *
+ */
+router.get('/', async (req, res) => {
+    try {
+        const { query } = req;
+        const { searchTerm = '' } = query;
+
+        let searchHistory;
+
+        if (searchTerm) {
+            // Search MongoDB 'search_history' for the searchTerm
+        } else {
+            // Get all documents from 'search_history'
+        }
+
+        res.json(searchHistory);
+
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+export default router;

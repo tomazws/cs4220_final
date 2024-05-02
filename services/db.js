@@ -32,6 +32,14 @@ const mongo = () => {
     dotenv.config();
 
     const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME } = process.env;
+
+    // If .env is missing
+    if (!DB_USER) {
+        console.error(`${'/'.repeat(61)}\n//${' '.repeat(57)}//`);
+        console.error('//  ERROR: .env is ignored on git. Ask for the .env file.  //');
+        console.error(`//${' '.repeat(57)}//\n${'/'.repeat(61)}`);
+    }
+
     const mongoURL = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}?retryWrites=true&w=majority&appName=Demo-Cluster`;
 
     let client;
