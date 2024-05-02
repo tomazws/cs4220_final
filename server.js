@@ -33,14 +33,14 @@ const app = express();
 
 // GET route to handle requests to the root URL (localhost:8888)
 app.get('/', (req, res) => {
-    res.send('Welcome to the Deck of Cards App');
+    res.send('Welcome to the Amiibo Character App');
 });
 
-// mounting the 'poker' router to handle requests starting with '/poker'
-app.use('/poker', poker);
+// mounting the 'search' router to handle requests starting with '/search'
+app.use('/search', search);
 
-// mounting the 'results' router to handle requests starting with '/results'
-app.use('/results', results);
+// mounting the 'history' router to handle requests starting with '/history'
+app.use('/history', history);
 
 // starting the server and connecting to MongoDB
 const server = app.listen(PORT, async () => {
