@@ -1,0 +1,25 @@
+{
+  "name": "final-project",
+  "version": "1.0.0",
+  "description": "CS4220 Final Project - AmiiboAPI",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomazws/cs4220_final.git"
+  },
+  "author": "Thomas Yeung, Isaac Mendoza, Jason Schmidt, Alberto Barboza, Angel Penate, Brian Mojica",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tomazws/cs4220_final/issues"
+  },
+  "homepage": "https://github.com/tomazws/cs4220_final#readme",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongodb": "^6.5.0"
+  }
+}

@@ -1,0 +1,17 @@
+// Command line to setup a new node.js project
+npm init
+
+// Install required packages
+npm install --save axios dotenv express mongodb
+
+// To run server
+node server.js
+
+// To stop server
+^C
+
+// To install development dependencies
+npm install --save-dev nodemon
+
+// To run server with nodemon
+npm run dev
