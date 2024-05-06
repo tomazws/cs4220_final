@@ -19,12 +19,38 @@ Authors:
     Angel Penate
     Brian Mojica
 */
-
 import express from 'express';
 import * as api from '../services/api.js';
 import mongo from '../services/db.js';
 
+
+
 const router = express.Router();
+
+const _formatAmiibo = (amiibos) => {//Might need for second router.get
+    return amiibos.amiibo.map((amiibo) =>{
+        return {
+            Character:   `${amiibo.name}`,
+            Game_Series: `${amiibo.gameSeries}`,
+            NA_Release:  (amiibo.release['na'] == null ? "Not released" :amiibo.release['na'].substring(0,4)),
+            JP_Release:  (amiibo.release['jp'] == null ? "Not released" :amiibo.release['jp'].substring(0,4)),
+            Image:       `${amiibo.image}`
+        };
+    });
+};
+const _selectionPrompt = async (amiibos) => {//We probably don't need this, but in case we do the select needs inquirer so it won't work
+    const displayCharacters = amiibos.amiibo.map((character) => {
+        return { name: `${character.name} ( ${character.gameSeries} )
+         (NA) ${character.release['na'] == null ? "not released" :character.release['na'].substring(0,4)},
+         (JP) ${character.release['jp'] == null ? "not released" :character.release['jp'].substring(0,4)}`,
+         value: character.head + character.tail};
+    });
+
+    return await select({
+        message: 'Select a character',
+        choices: displayCharacters
+    });
+};
 
 /**
  * Search characater by name
@@ -40,13 +66,10 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const { query } = req;
-        const { searchTerm = '' } = query;
-
-        if (!searchTerm) {
-            res.status(500).json({ error: 'Missing character name' });
-            return;
-        }
-
+        const { searchTerm = '' }  = query;
+        const characters = await api.searchByKeyword(searchTerm);
+        const amiibo = characters.amiibo.length
+        const results = {searchTerm: searchTerm, searchCount: amiibo, lastSearched: Date.now()};
         // RECORD TO SEARCH HISTORY
         // Query the MongoDB database 'search_history' for the searchTerm
         // If exists, update the lastSearched field to the current date
@@ -65,10 +88,11 @@ router.get('/', async (req, res) => {
         // Extract `${character.name} ( ${character.gameSeries} )` as display text
         // res.json the extractions
 
-        res.json('Test');
+        res.json(results);
+        await mongo.create('search_history', results);
 
     } catch (error) {
-        res.status(500).json(error);
+        res.status(500).json(error.toString());
     }
 });
 
@@ -86,35 +110,21 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id/details', async (req, res) => {
     try {
-        const { query, params } = req;
+        
 
-        const { id } = params;
-        const { cache } = query;
-        // Convert cache to boolean
-        cache = (cache === 'true');
-
-        if (!id) {
-            res.status(500).json({ error: 'Missing character ID' });
-            return;
-        }
-
-        let character;
-
-        if (!cache) {
+        //if (!cache) {
             // Get character details from the API
             // If query MongoDB database 'search_cache' for the character id doesn't pull anything
             // -- Save the character details to the 'search_cache' collection
-        } else {
+        //} else {
             // Get character details from the MongoDB database 'search_cache' with the character id
             // If not found
             // -- Get character details from the API
             // -- Save the character details to the 'search_cache' collection
-        }
-
-        res.json(character);
+        //}
 
     } catch (error) {
-        res.status(500).json(error);
+        res.status(500).json(error.toString());
     }
 });
 
