@@ -70,23 +70,6 @@ router.get('/', async (req, res) => {
         const characters = await api.searchByKeyword(searchTerm);
         const amiibo = characters.amiibo.length
         const results = {searchTerm: searchTerm, searchCount: amiibo, lastSearched: Date.now()};
-        // RECORD TO SEARCH HISTORY
-        // Query the MongoDB database 'search_history' for the searchTerm
-        // If exists, update the lastSearched field to the current date
-        // Else, create a new document in 'search_history'. the doc should look like:
-        /*
-        {
-            "searchTerm"     // (String) the search term the user entered
-            "searchCount":   // (Int) the matching result count from the API
-            "lastSearched":  // (Date) the date/time the last search was performed for the given keyword
-        }
-        */
-
-        // SEARCH FOR CHARACTER IN API
-        // Search the API for the character using searchTerm (name)
-        // Extract (character.head + character.tail) as the id
-        // Extract `${character.name} ( ${character.gameSeries} )` as display text
-        // res.json the extractions
 
         res.json(results);
         await mongo.create('search_history', results);
