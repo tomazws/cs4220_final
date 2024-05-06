@@ -38,19 +38,19 @@ const _formatAmiibo = (amiibos) => {//Might need for second router.get
         };
     });
 };
-const _selectionPrompt = async (amiibos) => {//We probably don't need this, but in case we do the select needs inquirer so it won't work
-    const displayCharacters = amiibos.amiibo.map((character) => {
-        return { name: `${character.name} ( ${character.gameSeries} )
-         (NA) ${character.release['na'] == null ? "not released" :character.release['na'].substring(0,4)},
-         (JP) ${character.release['jp'] == null ? "not released" :character.release['jp'].substring(0,4)}`,
-         value: character.head + character.tail};
-    });
+// const _selectionPrompt = async (amiibos) => {//We probably don't need this, but in case we do the select needs inquirer so it won't work
+//     const displayCharacters = amiibos.amiibo.map((character) => {
+//         return { name: `${character.name} ( ${character.gameSeries} )
+//          (NA) ${character.release['na'] == null ? "not released" :character.release['na'].substring(0,4)},
+//          (JP) ${character.release['jp'] == null ? "not released" :character.release['jp'].substring(0,4)}`,
+//          value: character.head + character.tail};
+//     });
 
-    return await select({
-        message: 'Select a character',
-        choices: displayCharacters
-    });
-};
+//     return await select({
+//         message: 'Select a character',
+//         choices: displayCharacters
+//     });
+// };
 
 /**
  * Search characater by name
@@ -67,12 +67,37 @@ router.get('/', async (req, res) => {
     try {
         const { query } = req;
         const { searchTerm = '' }  = query;
-        const characters = await api.searchByKeyword(searchTerm);
-        const amiibo = characters.amiibo.length
-        const results = {searchTerm: searchTerm, searchCount: amiibo, lastSearched: Date.now()};
 
+        // SEARCH FOR CHARACTER IN API
+        // Search the API for the character using searchTerm (name)
+        const characters = await api.searchByKeyword(searchTerm);
+        const searchCount = characters.amiibo.length
+
+        // RECORD TO SEARCH HISTORY
+        // Create a new document in 'search_history'. the doc should look like:
+        /*
+        {
+            "searchTerm"     // (String) the search term the user entered
+            "searchCount":   // (Int) the matching result count from the API
+            "lastSearched":  // (Date) the date/time the last search was performed for the given keyword
+        }
+        */
+        await mongo.create('search_history', {
+            searchTerm: searchTerm,
+            searchCount: searchCount,
+            lastSearched: Date.now()
+        });
+
+        // Extract (character.head + character.tail) as the id
+        // Extract `${character.name} ( ${character.gameSeries} )` as display text
+        const results = characters.map((character) => {
+            return {
+                id: character.head + character.tail,
+                displayText: `${character.name} ( ${character.gameSeries} )`};
+        });
+
+        // res.json the extractions
         res.json(results);
-        await mongo.create('search_history', results);
 
     } catch (error) {
         res.status(500).json(error.toString());
