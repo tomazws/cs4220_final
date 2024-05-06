@@ -90,15 +90,19 @@ const mongo = () => {
     /**
      * Finds documents in the specified collection
      * @param {string} collectionName - name of the collection
-     * @param {string} id - identifier for filtering documents
+     * @param {string} searchTerm - identifier for filtering documents
      * @returns {Promise<Document>} - a document or an array of ducments
      */
-    async function find(collectionName, id) {
+    async function find(collectionName, searchTerm) {
         try {
             const collection = db.collection(collectionName);
 
-            if (id) {
-                return await collection.findOne({ id: id });
+            if (searchTerm) {
+                return await collection
+                    .find({ searchTerm: searchTerm })
+                    .limit(10)
+                    .sort({ _id: -1 })
+                    .toArray();;
             } else {
                 return await collection
                     .find({})

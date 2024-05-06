@@ -45,9 +45,9 @@ router.get('/', async (req, res) => {
         let searchHistory;
 
         if (searchTerm) {
-            // Search MongoDB 'search_history' for the searchTerm
+            searchHistory = await mongo.find("search_history", searchTerm);
         } else {
-            // Get all documents from 'search_history'
+            searchHistory = await mongo.find("search_history");
         }
 
         res.json(searchHistory);
