@@ -43,6 +43,8 @@ router.get('/', async (req, res) => {
 
         let searchHistory;
 
+        // If search term is specified, search using search term
+        // Otherwise, just pull everything from the database
         if (searchTerm) {
             searchHistory = await mongo.find("search_history", {searchTerm: searchTerm});
         } else {

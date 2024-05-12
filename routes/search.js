@@ -43,18 +43,21 @@ router.get('/', async (req, res) => {
         const { query } = req;
         const { searchTerm = '' }  = query;
 
-        // SEARCH FOR CHARACTER IN API
-        // Search the API for the character using searchTerm (name)
+        // Search API for character
         const characters = await api.searchByKeyword(searchTerm);
+
+        // Obtain a total of the search result, and the current time
         const searchCount = characters.amiibo.length
         const dateTime = new Date();
 
+        // Record search information into database
         await mongo.create('search_history', {
             searchTerm: searchTerm,
             searchCount: searchCount,
             lastSearched: dateTime.toLocaleString()
         });
 
+        // Format JSON output
         const results = characters.amiibo.map((character) => {
             return {
                 id: character.head + character.tail,
@@ -89,18 +92,23 @@ router.get('/:id/details', async (req, res) => {
         let details;
 
         if (useCache) {
+            // If using cache, we pull character from database using its id
             console.log('Pulling details from cache...');
             details = await mongo.find('search_cache', {id: id});
             
+            // If character is not found,
+            // we will get character details using API and record details into database
             if (details.length === 0) {
                 console.log('Cache not found, pulling details from API...');
                 details = await api.getDetailsById(id);
                 await mongo.create('search_cache', {...details, id});
             }
         } else {
+            // If not using cache, we will obtain character details from API
             console.log('Pulling details from API...');
             details = await api.getDetailsById(id);
 
+            // If character exists in database, update it, otherwise create new one
             if ((await mongo.find('search_cache', {id: id})).length === 0) {
                 await mongo.create('search_cache', {...details, id});
             } else {
