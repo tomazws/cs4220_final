@@ -27,31 +27,6 @@ import mongo from '../services/db.js';
 
 const router = express.Router();
 
-const _formatAmiibo = (amiibos) => {//Might need for second router.get
-    return amiibos.amiibo.map((amiibo) =>{
-        return {
-            Character:   `${amiibo.name}`,
-            Game_Series: `${amiibo.gameSeries}`,
-            NA_Release:  (amiibo.release['na'] == null ? "Not released" :amiibo.release['na'].substring(0,4)),
-            JP_Release:  (amiibo.release['jp'] == null ? "Not released" :amiibo.release['jp'].substring(0,4)),
-            Image:       `${amiibo.image}`
-        };
-    });
-};
-// const _selectionPrompt = async (amiibos) => {//We probably don't need this, but in case we do the select needs inquirer so it won't work
-//     const displayCharacters = amiibos.amiibo.map((character) => {
-//         return { name: `${character.name} ( ${character.gameSeries} )
-//          (NA) ${character.release['na'] == null ? "not released" :character.release['na'].substring(0,4)},
-//          (JP) ${character.release['jp'] == null ? "not released" :character.release['jp'].substring(0,4)}`,
-//          value: character.head + character.tail};
-//     });
-
-//     return await select({
-//         message: 'Select a character',
-//         choices: displayCharacters
-//     });
-// };
-
 /**
  * Search characater by name
  *
@@ -72,31 +47,20 @@ router.get('/', async (req, res) => {
         // Search the API for the character using searchTerm (name)
         const characters = await api.searchByKeyword(searchTerm);
         const searchCount = characters.amiibo.length
+        const dateTime = new Date();
 
-        // RECORD TO SEARCH HISTORY
-        // Create a new document in 'search_history'. the doc should look like:
-        /*
-        {
-            "searchTerm"     // (String) the search term the user entered
-            "searchCount":   // (Int) the matching result count from the API
-            "lastSearched":  // (Date) the date/time the last search was performed for the given keyword
-        }
-        */
         await mongo.create('search_history', {
             searchTerm: searchTerm,
             searchCount: searchCount,
-            lastSearched: Date.now()
+            lastSearched: dateTime.toLocaleString()
         });
 
-        // Extract (character.head + character.tail) as the id
-        // Extract `${character.name} ( ${character.gameSeries} )` as display text
-        const results = characters.map((character) => {
+        const results = characters.amiibo.map((character) => {
             return {
                 id: character.head + character.tail,
                 displayText: `${character.name} ( ${character.gameSeries} )`};
         });
 
-        // res.json the extractions
         res.json(results);
 
     } catch (error) {
@@ -125,22 +89,26 @@ router.get('/:id/details', async (req, res) => {
         let details;
 
         if (useCache) {
-            details = await mongo.findOne('search_cache', { id: id });
+            console.log('Pulling details from cache...');
+            details = await mongo.find('search_cache', {id: id});
+
+            console.log(details);
             
-            if (!details) {
-                details = await api.fetchCharacterById(id);
+            if (details.length === 0) {
+                console.log('Cache not found, pulling details from API...');
+                details = await api.getDetailsById(id);
                 await mongo.create('search_cache', {...details, id});
             }
         } else {
-            details = await api.fetchCharacterById(id);
+            console.log('Pulling details from API...');
+            details = await api.getDetailsById(id);
 
-            const existingCache = await mongo.findOne('search_cache', { id: id });
-            if (existingCache) {
-                await mongo.updateOne('search_cache', { id: id }, {...details, id});
-            } else {
+            if ((await mongo.find('search_cache', {id: id})).length === 0) {
                 await mongo.create('search_cache', {...details, id});
             }
         }
+
+        res.json(details);
 
     } catch (error) {
         res.status(500).json(error.toString());

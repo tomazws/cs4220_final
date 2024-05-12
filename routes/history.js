@@ -21,7 +21,6 @@ Authors:
 */
 
 import express from 'express';
-import * as api from '../services/api.js';
 import mongo from '../services/db.js';
 
 const router = express.Router();
@@ -45,7 +44,7 @@ router.get('/', async (req, res) => {
         let searchHistory;
 
         if (searchTerm) {
-            searchHistory = await mongo.find("search_history", searchTerm);
+            searchHistory = await mongo.find("search_history", {searchTerm: searchTerm});
         } else {
             searchHistory = await mongo.find("search_history");
         }

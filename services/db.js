@@ -90,16 +90,16 @@ const mongo = () => {
     /**
      * Finds documents in the specified collection
      * @param {string} collectionName - name of the collection
-     * @param {string} searchTerm - identifier for filtering documents
+     * @param {string} query - identifier for filtering documents
      * @returns {Promise<Document>} - a document or an array of ducments
      */
-    async function find(collectionName, searchTerm) {
+    async function find(collectionName, query) {
         try {
             const collection = db.collection(collectionName);
 
-            if (searchTerm) {
+            if (query) {
                 return await collection
-                    .find({ searchTerm: searchTerm })
+                    .find(query)
                     .limit(10)
                     .sort({ _id: -1 })
                     .toArray();;
