@@ -91,8 +91,6 @@ router.get('/:id/details', async (req, res) => {
         if (useCache) {
             console.log('Pulling details from cache...');
             details = await mongo.find('search_cache', {id: id});
-
-            console.log(details);
             
             if (details.length === 0) {
                 console.log('Cache not found, pulling details from API...');
@@ -105,6 +103,8 @@ router.get('/:id/details', async (req, res) => {
 
             if ((await mongo.find('search_cache', {id: id})).length === 0) {
                 await mongo.create('search_cache', {...details, id});
+            } else {
+                await mongo.update('search_cache', id, {...details, id});
             }
         }
 
