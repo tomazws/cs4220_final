@@ -118,18 +118,29 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id/details', async (req, res) => {
     try {
-        
+        const { id } = req.params;
+        const { cache = "false" } = req.query;
+        const useCache = cache.toLowerCase() === 'true';
 
-        //if (!cache) {
-            // Get character details from the API
-            // If query MongoDB database 'search_cache' for the character id doesn't pull anything
-            // -- Save the character details to the 'search_cache' collection
-        //} else {
-            // Get character details from the MongoDB database 'search_cache' with the character id
-            // If not found
-            // -- Get character details from the API
-            // -- Save the character details to the 'search_cache' collection
-        //}
+        let details;
+
+        if (useCache) {
+            details = await mongo.findOne('search_cache', { id: id });
+            
+            if (!details) {
+                details = await api.fetchCharacterById(id);
+                await mongo.create('search_cache', {...details, id});
+            }
+        } else {
+            details = await api.fetchCharacterById(id);
+
+            const existingCache = await mongo.findOne('search_cache', { id: id });
+            if (existingCache) {
+                await mongo.updateOne('search_cache', { id: id }, {...details, id});
+            } else {
+                await mongo.create('search_cache', {...details, id});
+            }
+        }
 
     } catch (error) {
         res.status(500).json(error.toString());
