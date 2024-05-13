@@ -100,13 +100,11 @@ const mongo = () => {
             if (query) {
                 return await collection
                     .find(query)
-                    .limit(10)
                     .sort({ _id: -1 })
-                    .toArray();;
+                    .toArray();
             } else {
                 return await collection
                     .find({})
-                    .limit(10)
                     .sort({ _id: -1 })
                     .toArray();
             }
